@@ -1,0 +1,27 @@
+[project]
+name = "topic-shift"
+version = "0.1.0"
+description = "This package extract topics and contents from lecture slides"
+authors = [
+    {name = "Linus Bierhoff",email = "linus.bierhoff@icloud.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0.0"
+dependencies = [
+    "fastapi[standard] (>=0.120.2,<0.121.0)",
+    "pydantic (>=2.12.3,<3.0.0)",
+    "pymupdf (>=1.26.5,<2.0.0)",
+    "langgraph (>=1.0.1,<2.0.0)",
+    "langchain-community (>=0.4.1,<0.5.0)",
+    "langchain-openai (>=1.0.1,<2.0.0)",
+    "loguru (>=0.7.3,<0.8.0)"
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.9.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
