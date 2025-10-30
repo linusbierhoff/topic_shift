@@ -35,7 +35,7 @@ class Topics(BaseModel):
 
 class TopicsExtractor:
     def __init__(self):
-        self.model = ChatOpenAI(name="gpt-5-mini").with_structured_output(Topics)
+        self.model = ChatOpenAI(name="gpt-5-mini").with_structured_output(Topics, strict=True)
         graph = StateGraph(State)
 
         graph.add_node(
@@ -83,34 +83,40 @@ class TopicsExtractor:
                 * **Page Content to Analyze:** [The raw text from the page will be provided after this prompt]
 
                 ### OUTPUT FORMAT ###
-                You MUST respond with a JSON-compatible list of dictionaries. Each dictionary must have three keys: 'topic', 'content', and 'importance'. Do not provide any other text, preamble, or explanation.
+                You MUST respond with a JSON-compatible list of dictionaries. Each dictionary must have three keys: 'id', 'topic', 'content', 'goal' and 'importance'. Do not provide any other text, preamble, or explanation.
                 Be aware that each call only covers one Page of the PDF at a time. The aggregation of all topics across all pages should be small enough to fit into a single call later on.
                 You already have {contents_len} contents extracted so far.
                 
                 **Example Format:**
                 [
                     {{
+                        "id": : "snake_case_title_1",
                         "topic": "Topic Title 1",
                         "contents": [
                             "Detail about Key Point A",
                             "Detail about Key Point B"
                         ],
+                        "goal": "Understand basics of ...",
                         "importance": "high"
                     }},
                     {{
+                        "id": : "snake_case_title_2",
                         "topic": "Topic Title 2",
                         "contents": [
                             "Detail about another point less central to the main themes",
                             "Additional context or information related to Topic Title 2"
                         ],
+                        "goal": "Understand basics of ...",
                         "importance": "low"
                     }},
                     {{
+                        "id": "snake_case_title_3",
                         "topic": "Topic Title 3",
                         "contents": [
                             "Detail about another point less but more central to the main themes",
                             "Additional context or information related to Topic Title 3"
                         ],
+                        "goal": "Understand basics of ...",
                         "importance": "medium"
                     }}
                 ]
