@@ -35,7 +35,9 @@ class Topics(BaseModel):
 
 class TopicsExtractor:
     def __init__(self):
-        self.model = ChatOpenAI(name="gpt-5-mini").with_structured_output(Topics, strict=True)
+        self.model = ChatOpenAI(name="gpt-5-mini").with_structured_output(
+            Topics, strict=True
+        )
         graph = StateGraph(State)
 
         graph.add_node(

@@ -19,7 +19,8 @@ st.set_page_config(
 )
 
 # Custom CSS for beautiful cards
-st.markdown("""
+st.markdown(
+    """
     <style>
     /* Main styling */
     .main {
@@ -142,7 +143,9 @@ st.markdown("""
         text-align: center;
     }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Header
 col1, col2 = st.columns([1, 4])
@@ -259,7 +262,9 @@ if process_btn and uploaded_file and description:
 
         # Extract topics directly using the logic
         extractor: TopicsExtractor = st.session_state.extractor
-        topics = asyncio.run(extractor.extract_topics(file_location, description=description))
+        topics = asyncio.run(
+            extractor.extract_topics(file_location, description=description)
+        )
 
         # Convert topics to dict format for display
         topics_dict = [
@@ -306,28 +311,32 @@ if process_btn and uploaded_file and description:
 # Display results
 if st.session_state.topics:
     st.markdown("---")
-    
+
     # Header with statistics
     col_header1, col_header2 = st.columns([2, 1])
     with col_header1:
         st.subheader("📚 Extracted Topics")
-    
+
     with col_header2:
         # Sorting options
         sort_by = st.selectbox(
             "Sort by:",
             options=["importance", "alphabetical"],
             key="sort_select",
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
-    
+
     # Download buttons
     st.markdown("---")
     col_download1, col_download2 = st.columns(2)
-    
+
     # Prepare filename without extension
-    base_filename = st.session_state.file_name.split('.')[0] if st.session_state.file_name else "topics"
-    
+    base_filename = (
+        st.session_state.file_name.split(".")[0]
+        if st.session_state.file_name
+        else "topics"
+    )
+
     with col_download1:
         # Export as JSON
         json_data = json.dumps(st.session_state.topics, indent=2, ensure_ascii=False)
@@ -337,18 +346,20 @@ if st.session_state.topics:
             file_name=f"{base_filename}.json",
             mime="application/json",
         )
-    
+
     with col_download2:
         # Export as AMSL (YAML format without importance)
         topics_for_amsl = []
         for topic in st.session_state.topics:
-            topics_for_amsl.append({
-                "id": topic.get("id"),
-                "title": topic.get("title"),
-                "contents": topic.get("contents", []),
-                "goal": topic.get("goal"),
-            })
-        
+            topics_for_amsl.append(
+                {
+                    "id": topic.get("id"),
+                    "title": topic.get("title"),
+                    "contents": topic.get("contents", []),
+                    "goal": topic.get("goal"),
+                }
+            )
+
         yaml_data = yaml.safe_dump(topics_for_amsl, allow_unicode=True, sort_keys=False)
         st.download_button(
             label="📥 Download AMSL (YAML)",
@@ -356,7 +367,7 @@ if st.session_state.topics:
             file_name=f"{base_filename}.yaml",
             mime="application/x-yaml",
         )
-    
+
     st.markdown("---")
     topics_to_display = st.session_state.topics.copy()
     if sort_by == "importance":
@@ -366,7 +377,7 @@ if st.session_state.topics:
         )
     elif sort_by == "alphabetical":
         topics_to_display.sort(key=lambda x: x.get("title", "").lower())
-    
+
     # Display topics as cards in a grid
     cols = st.columns(2)
     for idx, topic in enumerate(topics_to_display):
@@ -375,7 +386,7 @@ if st.session_state.topics:
             title = topic.get("title", "Untitled")
             goal = topic.get("goal", "No goal specified")
             contents = topic.get("contents", [])
-            
+
             # Build the card HTML
             card_html = f"""
             <div class="topic-card">
@@ -391,18 +402,18 @@ if st.session_state.topics:
                 <div class="contents-section">
                     <div class="contents-title">📝 Key Points</div>
             """
-            
+
             if contents:
                 for content in contents:
                     card_html += f'<div class="content-item">• {content}</div>'
             else:
                 card_html += '<div class="content-item" style="color: #999;">No contents available</div>'
-            
+
             card_html += """
                 </div>
             </div>
             """
-            
+
             st.markdown(card_html, unsafe_allow_html=True)
 
 # Sidebar information
