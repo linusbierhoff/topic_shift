@@ -3,7 +3,6 @@ name = "topic-shift"
 version = "0.1.0"
 description = "This package extract topics and contents from lecture slides"
 authors = [{ name = "Linus Bierhoff", email = "linus.bierhoff@icloud.com" }]
-readme = "README.md"
 requires-python = ">=3.13,<4.0.0"
 dependencies = [
     "fastapi[standard] (>=0.120.2,<0.121.0)",
@@ -18,6 +17,7 @@ dependencies = [
 ]
 
 [tool.poetry]
+packages = [{ include = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.9.0"

@@ -40,6 +40,58 @@ poetry run python -m uvicorn src.app:app --reload
 
 The server will then run at `http://localhost:8000`
 
+## 🐳 Docker Deployment
+
+You can run Topic Shift in Docker with dynamic mode selection (API or GUI).
+
+### Build the Docker Image
+
+```bash
+docker build -t topic-shift .
+```
+
+### Run with API Mode (Default)
+
+```bash
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=your-api-key-here \
+  topic-shift api
+```
+
+The FastAPI server will be available at `http://localhost:8000`
+
+### Run with GUI Mode (Streamlit)
+
+```bash
+docker run -p 8501:8501 \
+  -e OPENAI_API_KEY=your-api-key-here \
+  topic-shift gui
+```
+
+The Streamlit interface will be available at `http://localhost:8501`
+
+### Environment Setup
+
+Make sure to pass your OpenAI API key via the `-e` flag or create a `.env` file:
+
+```bash
+# Using environment file
+docker run -p 8000:8000 \
+  --env-file .env \
+  topic-shift api
+```
+
+### Mount Local Files
+
+To process local PDF files, mount a volume:
+
+```bash
+docker run -p 8000:8000 \
+  -v /path/to/pdfs:/app/pdfs \
+  -e OPENAI_API_KEY=your-api-key-here \
+  topic-shift api
+```
+
 ## 📖 API Documentation
 
 ### POST `/extract-topics`
