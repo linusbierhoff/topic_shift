@@ -12,10 +12,10 @@ class ImportanceEnum(StrEnum):
 class Topic(BaseModel):
     """Model representing a topic with its content"""
 
-    id: str = Field(description="textual identifier of the topic based on its title")
-    title: str = Field(description="title of the topic")
-    importance: ImportanceEnum = Field(description="importance level of the topic")
-    contents: List[str] = Field(description="list of content items for the topic")
+    id: str = Field(description="Identifier basierted auf dem Titel des Themas")
+    title: str = Field(description="Titel des Themas")
+    importance: ImportanceEnum = Field(description="Wichtigkeit des Themas")
+    contents: List[str] = Field(description="Liste der Inhalte für das Thema")
     goal: str = Field(
-        description="The goal associated with the topic. E.g. 'Understand basics of ...'"
+        description="Das Ziel, das mit dem Thema verbunden ist. Z.B. 'Grundlagen von ... verstehen'"
     )

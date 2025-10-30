@@ -7,6 +7,8 @@ import os
 from dotenv import load_dotenv
 from logic.topic_extraction import TopicsExtractor
 from logic.pdf_content_loading import extract_pdf_contents
+import json
+import yaml
 
 # Page configuration
 st.set_page_config(
@@ -319,7 +321,43 @@ if st.session_state.topics:
             label_visibility="collapsed"
         )
     
-    # Sort topics
+    # Download buttons
+    st.markdown("---")
+    col_download1, col_download2 = st.columns(2)
+    
+    # Prepare filename without extension
+    base_filename = st.session_state.file_name.split('.')[0] if st.session_state.file_name else "topics"
+    
+    with col_download1:
+        # Export as JSON
+        json_data = json.dumps(st.session_state.topics, indent=2, ensure_ascii=False)
+        st.download_button(
+            label="📥 Download JSON",
+            data=json_data,
+            file_name=f"{base_filename}.json",
+            mime="application/json",
+        )
+    
+    with col_download2:
+        # Export as AMSL (YAML format without importance)
+        topics_for_amsl = []
+        for topic in st.session_state.topics:
+            topics_for_amsl.append({
+                "id": topic.get("id"),
+                "title": topic.get("title"),
+                "contents": topic.get("contents", []),
+                "goal": topic.get("goal"),
+            })
+        
+        yaml_data = yaml.safe_dump(topics_for_amsl, allow_unicode=True, sort_keys=False)
+        st.download_button(
+            label="📥 Download AMSL (YAML)",
+            data=yaml_data,
+            file_name=f"{base_filename}.yaml",
+            mime="application/x-yaml",
+        )
+    
+    st.markdown("---")
     topics_to_display = st.session_state.topics.copy()
     if sort_by == "importance":
         importance_order = {"high": 0, "medium": 1, "low": 2}

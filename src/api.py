@@ -6,8 +6,8 @@ from models.topic import Topic
 import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
-import yaml
 from fastapi import Form
+from logic.json_to_amsl import json_to_amsl
 
 
 @asynccontextmanager
@@ -23,7 +23,9 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/extract-topics")
-async def extract_topics(description: str = Form(...), file: UploadFile = File(...)) -> List[Topic]:
+async def extract_topics(
+    description: str = Form(...), file: UploadFile = File(...)
+) -> List[Topic]:
     """
     Upload a PDF file and extract topics and contents.
 
@@ -58,14 +60,7 @@ async def json_to_yaml(file: UploadFile) -> FileResponse:
     Returns:
         YAML formatted string
     """
-    json_content = await file.read()
-    json_dict = yaml.safe_load(json_content)
-    # Drop importance scores if present
-    for item in json_dict:
-        item.pop("importance", None)
-    yaml_content = yaml.safe_dump(json_dict)
-    temp_file = "temp_output.yaml"
-    with open(temp_file, "w") as f:
-        f.write(yaml_content)
+    json_data = await file.read()
+    amsl_data = json_to_amsl(json_data.decode("utf-8"))
 
-    return FileResponse(temp_file, media_type="application/x-yaml")
+    return FileResponse(amsl_data, media_type="application/x-yaml")
