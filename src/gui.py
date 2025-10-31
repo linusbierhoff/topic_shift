@@ -1,12 +1,9 @@
 import streamlit as st
-from typing import List
 import time
-from datetime import datetime
 import asyncio
 import os
 from dotenv import load_dotenv
 from logic.topic_extraction import TopicsExtractor
-from logic.pdf_content_loading import extract_pdf_contents
 import json
 import yaml
 

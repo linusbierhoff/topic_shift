@@ -2,12 +2,12 @@ from typing import List
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from logic.topic_extraction import TopicsExtractor
+from logic.json_to_amsl import json_to_amsl
 from models.topic import Topic
 import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from fastapi import Form
-from logic.json_to_amsl import json_to_amsl
 
 
 @asynccontextmanager
