@@ -42,7 +42,7 @@ class EmbeddingClusteringComponent:
         )
         detected_clusters = clustering_model.fit_predict(embeddings)
 
-        topic_model = OpenAIChatGenerator(model="gpt-4.1-nano")
+        topic_model = OpenAIChatGenerator(model="gpt-5.1-mini")
         full_clusters: list[Cluster] = []
         for k in set(detected_clusters):
             cluster_docs = [

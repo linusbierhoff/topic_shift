@@ -1,6 +1,9 @@
 # Topic Shift 🧠📄
 
-![Topic Shift Banner](https://via.placeholder.com/1200x300.png?text=Topic+Shift+-+From+Slides+to+Knowledge+Graphs)
+![Topic Shift Banner](banner.png)
+
+
+
 
 **Topic Shift** is a modern, full-stack application designed to automatically extract topics, conceptual contents, and relationships from lecture slides and PDF documents. It transforms unstructured educational materials into interactive, easily digestible knowledge graphs.
 

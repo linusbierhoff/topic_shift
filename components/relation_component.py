@@ -35,7 +35,7 @@ class RelationshipClassificationComponent:
         """
 
         relation_model = OpenAIChatGenerator(
-            generation_kwargs={"response_format": Response}, model="gpt-4.1-mini"
+            generation_kwargs={"response_format": Response}, model="gpt-5.1-mini"
         )
 
         async def relation_request(doc_A, doc_B) -> Optional[Relationship]:
