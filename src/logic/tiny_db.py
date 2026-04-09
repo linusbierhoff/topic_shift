@@ -53,7 +53,9 @@ class DBConnection:
         self.logger.info("Retrieving all tasks")
         all_tasks = self.tasks.all()
         return [
-            FullTaskModel(task_id=task.doc_id, status=task["status"])
+            FullTaskModel(
+                task_id=task.doc_id, status=task["status"], theme=task["theme"]
+            )
             for task in all_tasks
         ]
 

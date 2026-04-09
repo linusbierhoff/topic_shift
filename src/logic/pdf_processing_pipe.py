@@ -17,6 +17,7 @@ from haystack import Pipeline
 from haystack.components.embedders import OpenAIDocumentEmbedder
 from haystack.components.preprocessors import DocumentCleaner
 
+from src.logic.components.chunk_remover import ChunkRemover
 from src.logic.components.cluster_component import EmbeddingClusteringComponent
 from src.logic.components.relation_component import RelationshipClassificationComponent
 from src.models.cluster import Cluster
@@ -24,7 +25,7 @@ from src.models.relation import Relation
 
 
 def build_pdf_processing_pipeline(
-    remove_substrings: list[str], clusters: Optional[int] = None
+    theme: str, remove_substrings: list[str], clusters: Optional[int] = None
 ) -> Pipeline:
     """
     Build a Haystack pipeline for processing PDF documents.
@@ -58,12 +59,18 @@ def build_pdf_processing_pipeline(
             strip_whitespaces=True,
         ),
     )
+    pipe.add_component("chunk_remover", ChunkRemover(theme=theme))
     pipe.add_component("embedder", OpenAIDocumentEmbedder())
-    pipe.add_component("clusterer", EmbeddingClusteringComponent(n_clusters=clusters))
-    pipe.add_component("relation_classifier", RelationshipClassificationComponent())
+    pipe.add_component(
+        "clusterer", EmbeddingClusteringComponent(theme=theme, n_clusters=clusters)
+    )
+    pipe.add_component(
+        "relation_classifier", RelationshipClassificationComponent(theme=theme)
+    )
 
     pipe.connect("converter", "cleaner")
-    pipe.connect("cleaner", "embedder")
+    pipe.connect("cleaner", "chunk_remover")
+    pipe.connect("chunk_remover", "embedder")
     pipe.connect("embedder", "clusterer")
     pipe.connect("clusterer", "relation_classifier")
 
@@ -72,6 +79,7 @@ def build_pdf_processing_pipeline(
 
 def extract_pdf_contents(
     pdf_path: str,
+    theme: str,
     remove_substrings: list[str] = [],
     clusters: Optional[int] = None,
 ) -> tuple[list[Cluster], list[Relation]]:
@@ -85,6 +93,7 @@ def extract_pdf_contents(
         Extracted text content from the PDF file
     """
     pipe = build_pdf_processing_pipeline(
+        theme=theme,
         remove_substrings=remove_substrings,
         clusters=clusters,
     )

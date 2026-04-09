@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import numpy as np
@@ -17,9 +18,11 @@ class EmbeddingClusteringComponent:
 
     def __init__(
         self,
+        theme: str,
         n_clusters: Optional[int] = None,
         distance_threshold: Optional[float] = 1.2,
     ):
+        self.theme = theme
         self.n_clusters = n_clusters
         self.distance_threshold = distance_threshold if n_clusters is None else None
 
@@ -42,7 +45,13 @@ class EmbeddingClusteringComponent:
         )
         detected_clusters = clustering_model.fit_predict(embeddings)
 
-        topic_model = OpenAIChatGenerator(model="gpt-5.1-mini")
+        topic_model = OpenAIChatGenerator(
+            model=os.environ.get("TOPIC_MODEL", "gpt-5.4-mini"),
+            api_base_url=os.environ.get("TOPIC_MODEL_API_BASE_URL"),
+            generation_kwargs={
+                "temperature": os.environ.get("TOPIC_MODEL_TEMPERATURE", 0.0)
+            },
+        )
         full_clusters: list[Cluster] = []
         for k in set(detected_clusters):
             cluster_docs = [
@@ -51,9 +60,17 @@ class EmbeddingClusteringComponent:
             topic = (
                 topic_model.run(
                     [
+                        ChatMessage.from_system(
+                            f"""
+                            You are a helpful assistant for identifying the main topic of a cluster of document chunks.
+                            The theme of the overall document is: {self.theme}.
+                            The following document chunks belong to the same cluster and likely share the same topic.
+                            Please identify the main topic of these document chunks in one or two words.
+                            """
+                        ),
                         ChatMessage.from_user(
-                            f"""Given the following documents, provide a concise topic that summarizes their content:\n\n\n\n{[doc.content for doc in cluster_docs]}\n\n\n\nThe topic should be a short phrase with no more than five words."""
-                        )
+                            "<sep>".join([doc.content or "" for doc in cluster_docs])
+                        ),
                     ]
                 )["replies"][0].text
                 or "No topic identified"

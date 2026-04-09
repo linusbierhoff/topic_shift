@@ -5,15 +5,14 @@ from pydantic import BaseModel
 
 
 class Relationship(StrEnum):
-    EXAMPLE_OF = "example_of"
-    SUBTOPIC_OF = "subtopic_of"
-    ALTERNATIVE_TO = "alternative_to"
+    EXAMPLE = "example"
+    SPECIFICATION = "specification"
     NONE = "none"
 
 
 class RelationshipModel(StrEnum):
-    EXAMPLE_OF = "example_of"
-    SUBTOPIC_OF = "subtopic_of"
+    EXAMPLE = "example"
+    SPECIFICATION = "specification"
     ALTERNATIVE_TO = "alternative_to"
 
 

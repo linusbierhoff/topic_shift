@@ -11,8 +11,10 @@ class Status(StrEnum):
 
 class TaskModel(BaseModel):
     status: Status
+    theme: str
 
 
 class FullTaskModel(BaseModel):
     task_id: int
     status: Status
+    theme: str
