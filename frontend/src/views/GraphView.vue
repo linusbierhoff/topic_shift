@@ -1,36 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardFooter,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
+import { Maximize2 } from "lucide-vue-next";
 import { getResult } from "../api";
 import { VueFlow, useVueFlow, MarkerType } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
-import {
-    Loader2,
-    ArrowLeft,
-    X,
-    Maximize2,
-    BarChart3,
-    Info,
-} from "lucide-vue-next";
 import Footer from "../components/Footer.vue";
+import GraphHeader from "../components/graph/GraphHeader.vue";
+import NodeDetailsDialog from "../components/graph/NodeDetailsDialog.vue";
+import GraphLoadingState from "../components/graph/GraphLoadingState.vue";
 import {
     forceSimulation,
     forceLink,
@@ -39,7 +20,6 @@ import {
     forceY,
 } from "d3-force";
 
-const router = useRouter();
 const route = useRoute();
 const taskId = Number(route.params.id);
 
@@ -274,59 +254,14 @@ const formattedEdges = computed(() => {
 
 <template>
     <div class="h-screen w-screen flex flex-col font-sans bg-background">
-        <header
-            class="h-16 border-b flex items-center justify-between px-6 bg-card shrink-0 z-10"
-        >
-            <div class="flex items-center gap-4">
-                <Button variant="ghost" size="icon" @click="router.push('/')">
-                    <ArrowLeft class="w-5 h-5" />
-                </Button>
-                <div class="flex items-center gap-2">
-                    <BarChart3 class="w-5 h-5 text-primary" />
-                    <h1 class="text-xl font-bold tracking-tight">
-                        Topic Analysis Graph
-                        <span class="text-muted-foreground font-normal ml-1"
-                            >#{{ taskId }}</span
-                        >
-                    </h1>
-                </div>
-            </div>
-        </header>
+        <GraphHeader :task-id="taskId" />
 
         <main class="flex-1 bg-muted/20 relative overflow-hidden">
-            <div
-                v-if="isLoading"
-                class="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground z-10 bg-background/80 backdrop-blur-sm gap-4"
-            >
-                <div class="flex flex-col items-center gap-2">
-                    <Loader2 class="w-10 h-10 animate-spin text-primary" />
-                    <p class="font-medium animate-pulse">{{ statusMessage }}</p>
-                </div>
-            </div>
-
-            <div
-                v-else-if="nodes.length === 0"
-                class="absolute inset-0 flex items-center justify-center z-10 p-6"
-            >
-                <Card class="max-w-md w-full text-center p-8">
-                    <CardHeader>
-                        <div
-                            class="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4"
-                        >
-                            <Info class="w-6 h-6 text-destructive" />
-                        </div>
-                        <CardTitle>Unable to Load Graph</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p class="text-muted-foreground">{{ statusMessage }}</p>
-                    </CardContent>
-                    <CardFooter class="justify-center">
-                        <Button variant="outline" @click="router.push('/')"
-                            >Return to Dashboard</Button
-                        >
-                    </CardFooter>
-                </Card>
-            </div>
+            <GraphLoadingState
+                :is-loading="isLoading"
+                :status-message="statusMessage"
+                :has-nodes="nodes.length > 0"
+            />
 
             <VueFlow
                 v-show="nodes.length > 0 && !isLoading"
@@ -356,43 +291,13 @@ const formattedEdges = computed(() => {
                 <Controls />
             </VueFlow>
         </main>
+
         <Footer />
 
-        <!-- Node Detail Dialog -->
-        <Dialog v-model:open="isDetailOpen">
-            <DialogContent
-                class="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden"
-            >
-                <DialogHeader class="p-6 pb-0" v-if="selectedNode">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div
-                            class="w-3 h-3 rounded-full"
-                            :style="{
-                                backgroundColor: selectedNode.data.color,
-                            }"
-                        ></div>
-                        <span
-                            class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                            {{ selectedNode.data.clusterName }}
-                        </span>
-                    </div>
-                    <DialogTitle class="text-xl font-bold"
-                        >Document Fragment</DialogTitle
-                    >
-                </DialogHeader>
-
-                <Separator class="my-4" />
-
-                <ScrollArea class="flex-1 px-6 pb-6">
-                    <div
-                        class="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap font-sans"
-                    >
-                        {{ selectedNode?.data.content }}
-                    </div>
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
+        <NodeDetailsDialog
+            v-model:is-open="isDetailOpen"
+            :selected-node="selectedNode"
+        />
     </div>
 </template>
 
