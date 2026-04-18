@@ -8,9 +8,6 @@ from typing import Optional
 from haystack import Document, Pipeline, component, super_component
 from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.dataclasses import ChatMessage
-from haystack.dataclasses.chat_message import (
-    _CONTENT_PART_CLASSES_TO_SERIALIZATION_KEYS,
-)
 from pydantic import BaseModel, Field
 
 

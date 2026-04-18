@@ -9,6 +9,7 @@ export const startTask = async (
   theme: string,
   remove_substrings: string[] = [],
   clusters: number | null = null,
+  window_size: number | null = null,
 ) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -18,6 +19,9 @@ export const startTask = async (
   remove_substrings.forEach((s) => params.append("remove_substrings", s));
   if (clusters !== null && clusters.toString() !== "") {
     params.append("clusters", clusters.toString());
+  }
+  if (window_size !== null && window_size.toString() !== "") {
+    params.append("window_size", window_size.toString());
   }
 
   const response = await api.post(

@@ -25,7 +25,10 @@ from src.models.relation import Relation
 
 
 def build_pdf_processing_pipeline(
-    theme: str, remove_substrings: list[str], clusters: Optional[int] = None
+    theme: str,
+    remove_substrings: list[str],
+    clusters: Optional[int] = None,
+    window_size: Optional[int] = None,
 ) -> Pipeline:
     """
     Build a Haystack pipeline for processing PDF documents.
@@ -64,15 +67,21 @@ def build_pdf_processing_pipeline(
     pipe.add_component(
         "clusterer", EmbeddingClusteringComponent(theme=theme, n_clusters=clusters)
     )
+
+    relation_classifier_kwargs = {"theme": theme}
+    if window_size is not None:
+        relation_classifier_kwargs["window_size"] = window_size
+
     pipe.add_component(
-        "relation_classifier", RelationshipClassificationComponent(theme=theme)
+        "relation_classifier",
+        RelationshipClassificationComponent(**relation_classifier_kwargs),
     )
 
     pipe.connect("converter", "cleaner")
     pipe.connect("cleaner", "chunk_remover")
     pipe.connect("chunk_remover", "embedder")
     pipe.connect("embedder", "clusterer")
-    pipe.connect("clusterer", "relation_classifier")
+    pipe.connect("embedder", "relation_classifier")
 
     return pipe
 
@@ -82,6 +91,7 @@ def extract_pdf_contents(
     theme: str,
     remove_substrings: list[str] = [],
     clusters: Optional[int] = None,
+    window_size: Optional[int] = None,
 ) -> tuple[list[Cluster], list[Relation]]:
     """
     Extract text contents from a PDF file.
@@ -96,6 +106,7 @@ def extract_pdf_contents(
         theme=theme,
         remove_substrings=remove_substrings,
         clusters=clusters,
+        window_size=window_size,
     )
     result = pipe.run(
         {"converter": {"paths": [pdf_path]}},

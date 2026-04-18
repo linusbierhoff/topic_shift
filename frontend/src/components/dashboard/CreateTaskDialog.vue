@@ -25,6 +25,7 @@ const isModalOpen = ref(false);
 const theme = ref("");
 const removeSubstrings = ref("");
 const clusters = ref<number | null>(null);
+const windowSize = ref<number | null>(null);
 const selectedFile = ref<File | null>(null);
 
 const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
@@ -59,6 +60,7 @@ const handleStartTask = async () => {
             theme.value,
             substrings,
             clusters.value,
+            windowSize.value,
         );
         if (data && data.task_id) {
             isModalOpen.value = false;
@@ -66,6 +68,7 @@ const handleStartTask = async () => {
             theme.value = "";
             removeSubstrings.value = "";
             clusters.value = null;
+            windowSize.value = null;
             selectedFile.value = null;
             await props.onTaskCreated();
         }
@@ -134,6 +137,20 @@ defineExpose({
                         type="number"
                         v-model="clusters"
                         placeholder="Auto-detect (leave empty)"
+                        class="h-10"
+                    />
+                </div>
+                <div class="grid gap-2">
+                    <Label
+                        for="windowSize"
+                        class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                        >Window Size</Label
+                    >
+                    <Input
+                        id="windowSize"
+                        type="number"
+                        v-model="windowSize"
+                        placeholder="Default (5)"
                         class="h-10"
                     />
                 </div>

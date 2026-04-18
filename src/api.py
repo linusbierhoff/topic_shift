@@ -44,6 +44,7 @@ async def upload_pdf(
     file: UploadFile,
     remove_substrings: list[str] = [],
     clusters: int | None = None,
+    window_size: int | None = None,
 ) -> FullTaskModel:
     # Save the uploaded file temporarily
     temp_file_path = f"/tmp/{file.filename}"
@@ -53,10 +54,12 @@ async def upload_pdf(
         TaskModel(status=Status.IN_PROGRESS, theme=theme)
     )
 
-    def background_function(temp_file_path, theme, remove_substrings, clusters):
+    def background_function(
+        temp_file_path, theme, remove_substrings, clusters, window_size
+    ):
         try:
             clusters, relations = extract_pdf_contents(
-                temp_file_path, theme, remove_substrings, clusters
+                temp_file_path, theme, remove_substrings, clusters, window_size
             )
             DBConnection().upgrade_task(task_id, {"status": Status.COMPLETED})
             DBConnection().insert_clusters(clusters, task_id)
@@ -70,7 +73,12 @@ async def upload_pdf(
                 os.remove(temp_file_path)
 
     background_tasks.add_task(
-        background_function, temp_file_path, theme, remove_substrings, clusters
+        background_function,
+        temp_file_path,
+        theme,
+        remove_substrings,
+        clusters,
+        window_size,
     )
 
     return FullTaskModel(task_id=task_id, status=Status.IN_PROGRESS, theme=theme)
