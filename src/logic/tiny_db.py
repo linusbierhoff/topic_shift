@@ -13,7 +13,7 @@ class DBConnection:
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(DBConnection, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, db_path: str = "db.json"):
@@ -39,9 +39,8 @@ class DBConnection:
         task_data = self.tasks.get(doc_id=task_id)
         if task_data:
             return TaskModel.model_validate(task_data)
-        else:
-            self.logger.warning(f"Task with ID {task_id} not found")
-            return None
+        self.logger.warning(f"Task with ID {task_id} not found")
+        return None
 
     def delete_task(self, task_id: int):
         self.logger.info(f"Deleting task with ID: {task_id}")

@@ -3,7 +3,6 @@ import json
 import os
 import random
 from enum import StrEnum
-from typing import Optional
 
 from haystack import Document, Pipeline, component, super_component
 from haystack.components.generators.chat import OpenAIChatGenerator
@@ -87,7 +86,7 @@ class TypeBasedChunkRemover:
             },
         )
 
-        async def type_request(doc) -> Optional[ChunkType]:
+        async def type_request(doc) -> ChunkType | None:
             few_shots: list[tuple[str, str]] = [
                 (
                     """
@@ -194,7 +193,7 @@ class TypeBasedChunkRemover:
             relevant_docs.extend(
                 [
                     doc
-                    for doc, chunk_type in zip(documents, types)
+                    for doc, chunk_type in zip(documents, types, strict=False)
                     if chunk_type == ChunkType.RELEVANT_CONTENT
                 ]
             )

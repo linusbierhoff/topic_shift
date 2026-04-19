@@ -10,3 +10,5 @@ build/
 .gemini
 .vscode/
 .idea/
+.venv/
+.ruff_cache/

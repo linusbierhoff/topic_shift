@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import numpy as np
 from haystack import component
@@ -19,8 +18,8 @@ class EmbeddingClusteringComponent:
     def __init__(
         self,
         theme: str,
-        n_clusters: Optional[int] = None,
-        distance_threshold: Optional[float] = 1.2,
+        n_clusters: int | None = None,
+        distance_threshold: float | None = 1.2,
     ):
         self.theme = theme
         self.n_clusters = n_clusters

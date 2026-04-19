@@ -3,8 +3,6 @@ This module provides functionality to extract text contents from PDF files using
 It defines a function `extract_pdf_contents` that takes the path to a PDF file as input and returns the extracted text content in markdown format.
 """
 
-from typing import Optional
-
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
@@ -27,8 +25,8 @@ from src.models.relation import Relation
 def build_pdf_processing_pipeline(
     theme: str,
     remove_substrings: list[str],
-    clusters: Optional[int] = None,
-    window_size: Optional[int] = None,
+    clusters: int | None = None,
+    window_size: int | None = None,
 ) -> Pipeline:
     """
     Build a Haystack pipeline for processing PDF documents.
@@ -68,13 +66,9 @@ def build_pdf_processing_pipeline(
         "clusterer", EmbeddingClusteringComponent(theme=theme, n_clusters=clusters)
     )
 
-    relation_classifier_kwargs = {"theme": theme}
-    if window_size is not None:
-        relation_classifier_kwargs["window_size"] = window_size
-
     pipe.add_component(
         "relation_classifier",
-        RelationshipClassificationComponent(**relation_classifier_kwargs),
+        RelationshipClassificationComponent(theme=theme, window_size=window_size),
     )
 
     pipe.connect("converter", "cleaner")
@@ -89,9 +83,9 @@ def build_pdf_processing_pipeline(
 def extract_pdf_contents(
     pdf_path: str,
     theme: str,
-    remove_substrings: list[str] = [],
-    clusters: Optional[int] = None,
-    window_size: Optional[int] = None,
+    remove_substrings: list[str] | None = None,
+    clusters: int | None = None,
+    window_size: int | None = None,
 ) -> tuple[list[Cluster], list[Relation]]:
     """
     Extract text contents from a PDF file.
@@ -102,6 +96,8 @@ def extract_pdf_contents(
     Returns:
         Extracted text content from the PDF file
     """
+    if remove_substrings is None:
+        remove_substrings = []
     pipe = build_pdf_processing_pipeline(
         theme=theme,
         remove_substrings=remove_substrings,

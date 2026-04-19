@@ -147,10 +147,10 @@ class ClusterRelationshipClassificationComponent:
                     single_relation_comparison(i, relations, cluster_docs)
                 )
 
-            async def run_comparisons():
-                await asyncio.gather(*relation_comparisons)
+            async def run_comparisons(comparisons):
+                await asyncio.gather(*comparisons)
 
-            asyncio.run(run_comparisons())
+            asyncio.run(run_comparisons(relation_comparisons))
 
         return {
             "relations": relations,

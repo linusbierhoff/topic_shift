@@ -1,6 +1,6 @@
-import os
 import shutil
 from logging import Logger
+from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,35 +42,37 @@ async def upload_pdf(
     background_tasks: BackgroundTasks,
     theme: str,
     file: UploadFile,
-    remove_substrings: list[str] = [],
+    remove_substrings: list[str] | None = None,
     clusters: int | None = None,
     window_size: int | None = None,
 ) -> FullTaskModel:
+    if remove_substrings is None:
+        remove_substrings = []
     # Save the uploaded file temporarily
-    temp_file_path = f"/tmp/{file.filename}"
-    with open(temp_file_path, "wb") as buffer:
+    temp_file_path = Path(f"/tmp/{file.filename}")
+    with temp_file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     task_id = DBConnection().insert_task(
         TaskModel(status=Status.IN_PROGRESS, theme=theme)
     )
 
     def background_function(
-        temp_file_path, theme, remove_substrings, clusters, window_size
+        temp_file_path: Path, theme, remove_substrings, clusters, window_size
     ):
         try:
-            clusters, relations = extract_pdf_contents(
-                temp_file_path, theme, remove_substrings, clusters, window_size
+            clusters_res, relations = extract_pdf_contents(
+                str(temp_file_path), theme, remove_substrings, clusters, window_size
             )
             DBConnection().upgrade_task(task_id, {"status": Status.COMPLETED})
-            DBConnection().insert_clusters(clusters, task_id)
+            DBConnection().insert_clusters(clusters_res, task_id)
             DBConnection().insert_relations(relations, task_id)
 
         except Exception as e:
             logger.error(f"Error processing task {task_id}: {e}")
             DBConnection().upgrade_task(task_id, {"status": Status.FAILED})
         finally:
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+            if temp_file_path.exists():
+                temp_file_path.unlink()
 
     background_tasks.add_task(
         background_function,
@@ -80,6 +82,8 @@ async def upload_pdf(
         clusters,
         window_size,
     )
+
+    return FullTaskModel(task_id=task_id, status=Status.IN_PROGRESS, theme=theme)
 
     return FullTaskModel(task_id=task_id, status=Status.IN_PROGRESS, theme=theme)
 

@@ -8,11 +8,12 @@
 This tool was built to help students, researchers, and educators visualize complex topics, identify key themes, and understand the underlying connections between different concepts presented in slide decks.
 
 ## ✨ Features
+ 
 
 - **Advanced PDF Parsing**: Leverages IBM's `docling` to intelligently parse PDF layouts, including tables and structured text, optimized specifically for presentation slides.
 - **AI-Powered NLP Pipeline**: Utilizes `haystack-ai` and OpenAI embeddings to process, clean, and semantically embed document segments.
 - **Concept Clustering**: Automatically groups related concepts and slides together using semantic embeddings.
-- **Relationship Extraction**: Classifies and extracts logical relationships between different conceptual clusters.
+- **Relationship Extraction**: Classifies and extracts logical relationships between the document chunks.
 - **Interactive Knowledge Graphs**: Visualizes the extracted topics and their relationships using a highly interactive, node-based graph powered by `Vue Flow`.
 - **Asynchronous Processing**: Implements non-blocking background task execution using FastAPI, ensuring a seamless user experience even when processing large, multi-page PDFs.
 - **Local Storage**: Employs lightweight local data persistence using `TinyDB` for managing task states, clusters, and graph relations.
@@ -23,7 +24,7 @@ This tool was built to help students, researchers, and educators visualize compl
 - **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
 - **AI & NLP**: [Haystack AI](https://haystack.deepset.ai/), [Docling](https://github.com/DS4SD/docling), OpenAI API
 - **Database**: [TinyDB](https://tinydb.readthedocs.io/)
-- **Package Management**: [Poetry](https://python-poetry.org/)
+- **Package Management**: [uv](https://docs.astral.sh/uv/)
 
 **Frontend (TypeScript)**
 - **Framework**: [Vue 3](https://vuejs.org/) (Composition API)
@@ -37,7 +38,7 @@ This tool was built to help students, researchers, and educators visualize compl
 
 - **Python** `>= 3.11, < 3.13`
 - **Node.js** `>= 18.x`
-- **Poetry** (Python package manager)
+- **UV** (Python package manager)
 - **OpenAI API Key** (Required for document embeddings and relationship classification)
 
 ### Backend Setup
@@ -47,9 +48,9 @@ This tool was built to help students, researchers, and educators visualize compl
    cd topic_shift
    ```
 
-2. Install the backend dependencies using Poetry:
+2. Install the backend dependencies using uv:
    ```bash
-   poetry install
+   uv sync
    ```
 
 3. Set up your environment variables. You will need an OpenAI API key for the embedding pipeline:
@@ -59,7 +60,7 @@ This tool was built to help students, researchers, and educators visualize compl
 
 4. Start the FastAPI development server:
    ```bash
-   poetry run uvicorn src.api:app --reload
+   uv run uvicorn src.api:app --reload
    ```
    *The API will be available at `http://localhost:8000`. You can view the Swagger UI documentation at `http://localhost:8000/docs`.*
 
@@ -82,6 +83,8 @@ This tool was built to help students, researchers, and educators visualize compl
    *The frontend will be available at `http://localhost:5173`.*
 
 ## 🏗️ Architecture & AI Pipeline
+
+![Topic Shift Pipeline](output.png)
 
 Topic Shift processes documents through a highly optimized data pipeline orchestrated by Haystack:
 

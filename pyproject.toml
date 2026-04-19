@@ -3,7 +3,7 @@ name = "topic-shift"
 version = "0.1.0"
 description = "This package extract topics and contents from lecture slides"
 authors = [{ name = "Linus Bierhoff", email = "linus.bierhoff@icloud.com" }]
-requires-python = ">=3.11,<3.13.0"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "fastapi[standard] (>=0.120.2,<0.121.0)",
     "pydantic (>=2.12.3,<3.0.0)",
@@ -19,15 +19,29 @@ dependencies = [
     "click (>=8.3.2,<9.0.0)",
 ]
 
-[tool.poetry]
-packages = [{ include = "src" }]
-
-[tool.poetry.group.dev.dependencies]
-black = "^25.9.0"
-pytest = "^9.0.2"
-httpx = "^0.28.1"
-pytest-asyncio = "^1.3.0"
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "ruff>=0.9.0",
+]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RET"]
+ignore = ["E501", "N815", "N803"]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["topic_shift"]

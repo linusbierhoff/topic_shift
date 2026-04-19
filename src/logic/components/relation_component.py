@@ -93,8 +93,9 @@ class RelationshipClassificationComponent:
                 messages.append(ChatMessage.from_user(example_input))
                 messages.append(ChatMessage.from_assistant(example_output))
 
-
-            document_section = "\n".join([doc.content for doc in [*context_docs, source_doc]])
+            document_section = "\n".join(
+                [doc.content for doc in [*context_docs, source_doc]]
+            )
 
             relation = (
                 (
