@@ -64,23 +64,16 @@ This tool was built to help students, researchers, and educators visualize compl
    ```
    *The API will be available at `http://localhost:8000`. You can view the Swagger UI documentation at `http://localhost:8000/docs`.*
 
-### Frontend Setup
+### 🐳 Docker Setup
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+The easiest way to run the entire stack is using Docker and Docker Compose.
 
-2. Install the frontend dependencies:
+1. Ensure you have an `.env` file in the root directory with your `OPENAI_API_KEY`.
+2. Run the following command:
    ```bash
-   npm install
+   docker-compose up --build
    ```
-
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *The frontend will be available at `http://localhost:5173`.*
+3. The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
 
 ## 🏗️ Architecture & AI Pipeline
 

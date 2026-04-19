@@ -24,9 +24,9 @@ const isModalOpen = ref(false);
 
 const theme = ref("");
 const removeSubstrings = ref("");
-const clusters = ref<number | null>(null);
-const windowSize = ref<number | null>(null);
-const selectedFile = ref<File | null>(null);
+const clusters = ref<number | undefined>(undefined);
+const windowSize = ref<number | undefined>(undefined);
+const selectedFile = ref<File | undefined>(undefined);
 
 const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
 
@@ -67,9 +67,9 @@ const handleStartTask = async () => {
             // Reset form
             theme.value = "";
             removeSubstrings.value = "";
-            clusters.value = null;
-            windowSize.value = null;
-            selectedFile.value = null;
+            clusters.value = undefined;
+            windowSize.value = undefined;
+            selectedFile.value = undefined;
             await props.onTaskCreated();
         }
     } catch (error) {

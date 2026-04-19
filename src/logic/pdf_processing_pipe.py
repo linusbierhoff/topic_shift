@@ -24,9 +24,9 @@ from src.models.relation import Relation
 
 def build_pdf_processing_pipeline(
     theme: str,
+    window_size: int,
     remove_substrings: list[str],
     clusters: int | None = None,
-    window_size: int | None = None,
 ) -> Pipeline:
     """
     Build a Haystack pipeline for processing PDF documents.
@@ -39,7 +39,7 @@ def build_pdf_processing_pipeline(
     pipeline_options.do_picture_description = False
     pipeline_options.do_picture_classification = False
     pipeline_options.do_table_structure = True
-    pipeline_options.table_structure_options.mode = TableFormerMode.FAST  # pyright: ignore[reportAttributeAccessIssue]
+    pipeline_options.table_structure_options.mode = TableFormerMode.FAST  # ty:ignore[unresolved-attribute]
     pipeline_options.picture_description_options = granite_picture_description
 
     converter = DocumentConverter(
@@ -60,7 +60,7 @@ def build_pdf_processing_pipeline(
             strip_whitespaces=True,
         ),
     )
-    pipe.add_component("chunk_remover", ChunkRemover(theme=theme))
+    pipe.add_component("chunk_remover", ChunkRemover(theme=theme))  # ty:ignore[invalid-argument-type]
     pipe.add_component("embedder", OpenAIDocumentEmbedder())
     pipe.add_component(
         "clusterer", EmbeddingClusteringComponent(theme=theme, n_clusters=clusters)
@@ -83,9 +83,9 @@ def build_pdf_processing_pipeline(
 def extract_pdf_contents(
     pdf_path: str,
     theme: str,
+    window_size: int,
     remove_substrings: list[str] | None = None,
     clusters: int | None = None,
-    window_size: int | None = None,
 ) -> tuple[list[Cluster], list[Relation]]:
     """
     Extract text contents from a PDF file.
@@ -100,9 +100,9 @@ def extract_pdf_contents(
         remove_substrings = []
     pipe = build_pdf_processing_pipeline(
         theme=theme,
+        window_size=window_size,
         remove_substrings=remove_substrings,
         clusters=clusters,
-        window_size=window_size,
     )
     result = pipe.run(
         {"converter": {"paths": [pdf_path]}},

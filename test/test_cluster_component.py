@@ -22,7 +22,7 @@ def test_cluster_component():
         ),
     ]
 
-    result = EmbeddingClusteringComponent().run(documents)
+    result = EmbeddingClusteringComponent("Machine Learning").run(documents)
     assert len(result["clusters"]) == 2
     assert len(result["clusters"][0].documents) == 2
     assert len(result["clusters"][1].documents) == 1

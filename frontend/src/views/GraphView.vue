@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Maximize2 } from "lucide-vue-next";
 import { getResult } from "../api";
-import { VueFlow, useVueFlow, MarkerType } from "@vue-flow/core";
+import type { ResultModel } from "../models";
+import { VueFlow, useVueFlow, MarkerType, type Node, type Edge } from "@vue-flow/core";
+import type { CSSProperties } from "vue";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import Footer from "../components/Footer.vue";
 import GraphHeader from "../components/graph/GraphHeader.vue";
-import NodeDetailsDialog from "../components/graph/NodeDetailsDialog.vue";
+import NodeDetailsDialog, { type GraphNodeData } from "../components/graph/NodeDetailsDialog.vue";
 import GraphLoadingState from "../components/graph/GraphLoadingState.vue";
 import {
     forceSimulation,
@@ -18,6 +20,8 @@ import {
     forceManyBody,
     forceX,
     forceY,
+    type SimulationNodeDatum,
+    type SimulationLinkDatum,
 } from "d3-force";
 
 const route = useRoute();
@@ -25,9 +29,9 @@ const taskId = Number(route.params.id);
 
 const isLoading = ref(true);
 const statusMessage = ref("Loading graph data...");
-const nodes = ref<any[]>([]);
-const edges = ref<any[]>([]);
-const selectedNode = ref<any>(null);
+const nodes = ref<Node<GraphNodeData>[]>([]);
+const edges = ref<Edge[]>([]);
+const selectedNodeData = ref<GraphNodeData | null>(null);
 const isDetailOpen = ref(false);
 const highlightedNodeId = ref<string | null>(null);
 const relatedNodeIds = ref<Set<string>>(new Set());
@@ -66,8 +70,8 @@ onPaneClick(() => {
     relatedNodeIds.value = new Set();
 });
 
-const openDetails = (node: any) => {
-    selectedNode.value = node;
+const openDetails = (data: GraphNodeData) => {
+    selectedNodeData.value = data;
     isDetailOpen.value = true;
 };
 
@@ -110,30 +114,43 @@ onUnmounted(() => {
     }
 });
 
-const processGraphData = (data: any) => {
-    const simulationNodes: any[] = [];
-    const simulationLinks: any[] = [];
-    const nodeToClusterColor = new Map();
+interface SimulationNode extends SimulationNodeDatum {
+    id: string;
+    label: string;
+    data: GraphNodeData;
+    class: string;
+    style: { borderColor: string };
+}
 
-    const clusterColorMap = new Map();
-    data.clusters.forEach((cluster: any, idx: number) => {
+interface SimulationLink extends SimulationLinkDatum<SimulationNode> {
+    id: string;
+    label: string;
+}
+
+const processGraphData = (data: ResultModel) => {
+    const simulationNodes: SimulationNode[] = [];
+    const simulationLinks: SimulationLink[] = [];
+    const nodeToClusterColor = new Map<string, string>();
+
+    const clusterColorMap = new Map<number, string>();
+    data.clusters.forEach((_, idx) => {
         const color = CLUSTER_COLORS[idx % CLUSTER_COLORS.length];
         clusterColorMap.set(idx, color);
     });
 
-    data.clusters.forEach((cluster: any, idx: number) => {
-        const clusterColor = clusterColorMap.get(idx);
-        cluster.documents.forEach((doc: any) => {
-            const node = {
+    data.clusters.forEach((cluster, idx) => {
+        const clusterColor = clusterColorMap.get(idx) || "#ccc";
+        cluster.documents.forEach((doc) => {
+            const node: SimulationNode = {
                 id: doc.id,
                 label: doc.content
                     ? doc.content.substring(0, 100) + "..."
                     : doc.id,
                 data: {
-                    clusterId: cluster.id,
+                    clusterId: idx,
                     content: doc.content,
                     color: clusterColor,
-                    clusterName: cluster.name || `Cluster ${idx + 1}`,
+                    clusterName: cluster.title || `Cluster ${idx + 1}`,
                 },
                 class: "bg-white border-2 rounded-xl p-4 shadow-sm w-[300px] text-sm cursor-pointer hover:shadow-md transition-all",
                 style: { borderColor: clusterColor },
@@ -145,7 +162,7 @@ const processGraphData = (data: any) => {
         });
     });
 
-    data.relations.forEach((relation: any, idx: number) => {
+    data.relations.forEach((relation, idx) => {
         simulationLinks.push({
             id: `e-${relation.document_A}-${relation.document_B}-${idx}`,
             source: relation.document_A,
@@ -154,32 +171,32 @@ const processGraphData = (data: any) => {
         });
     });
 
-    const clusterCenters = new Map();
-    data.clusters.forEach((cluster: any, idx: number) => {
-        clusterCenters.set(cluster.id, {
+    const clusterCenters = new Map<number, { x: number; y: number }>();
+    data.clusters.forEach((_, idx) => {
+        clusterCenters.set(idx, {
             x: (idx % 3) * 1200,
             y: Math.floor(idx / 3) * 1200,
         });
     });
 
-    const simulation = forceSimulation(simulationNodes)
+    const simulation = forceSimulation<SimulationNode>(simulationNodes)
         .force(
             "link",
-            forceLink(simulationLinks)
-                .id((d: any) => d.id)
+            forceLink<SimulationNode, SimulationLink>(simulationLinks)
+                .id((d) => d.id)
                 .distance(800),
         )
         .force("charge", forceManyBody().strength(-8000))
         .force(
             "x",
-            forceX(
-                (d: any) => clusterCenters.get(d.data.clusterId)?.x || 0,
+            forceX<SimulationNode>(
+                (d) => clusterCenters.get(d.data.clusterId)?.x || 0,
             ).strength(0.1),
         )
         .force(
             "y",
-            forceY(
-                (d: any) => clusterCenters.get(d.data.clusterId)?.y || 0,
+            forceY<SimulationNode>(
+                (d) => clusterCenters.get(d.data.clusterId)?.y || 0,
             ).strength(0.1),
         )
         .stop();
@@ -190,19 +207,20 @@ const processGraphData = (data: any) => {
         id: n.id,
         type: "custom",
         label: n.label,
-        position: { x: n.x, y: n.y },
+        position: { x: n.x || 0, y: n.y || 0 },
         data: n.data,
         class: n.class,
-        style: n.style,
-    }));
+        style: n.style as CSSProperties,
+    })) as Node<GraphNodeData>[];
 
     edges.value = simulationLinks.map((l) => {
-        const sourceId = typeof l.source === "object" ? l.source.id : l.source;
+        const sourceId = typeof l.source === "object" ? (l.source as SimulationNode).id : (l.source as string);
+        const targetId = typeof l.target === "object" ? (l.target as SimulationNode).id : (l.target as string);
         const color = nodeToClusterColor.get(sourceId) || "#3b82f6";
         return {
             id: l.id,
             source: sourceId,
-            target: typeof l.target === "object" ? l.target.id : l.target,
+            target: targetId,
             label: l.label,
             animated: true,
             style: { stroke: color, strokeWidth: 3 },
@@ -210,7 +228,7 @@ const processGraphData = (data: any) => {
                 type: MarkerType.ArrowClosed,
                 color: color,
             },
-            labelBgPadding: [8, 4],
+            labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             labelBgStyle: {
                 fill: "#fff",
@@ -226,8 +244,11 @@ const processGraphData = (data: any) => {
     }, 200);
 };
 
-const formattedNodes = computed(() => {
-    return nodes.value.map((node) => {
+const formattedNodes = ref<Node<GraphNodeData>[]>([]);
+const formattedEdges = ref<Edge[]>([]);
+
+watch([nodes, highlightedNodeId, relatedNodeIds], () => {
+    formattedNodes.value = nodes.value.map((node): Node<GraphNodeData> => {
         const isHighlighted =
             highlightedNodeId.value === null ||
             relatedNodeIds.value.has(node.id);
@@ -236,10 +257,10 @@ const formattedNodes = computed(() => {
             class: `${node.class} ${!isHighlighted ? "grayscale opacity-20" : ""}`,
         };
     });
-});
+}, { immediate: true });
 
-const formattedEdges = computed(() => {
-    return edges.value.map((edge) => {
+watch([edges, highlightedNodeId], () => {
+    formattedEdges.value = edges.value.map((edge): Edge => {
         const isHighlighted =
             highlightedNodeId.value === null ||
             edge.source === highlightedNodeId.value ||
@@ -249,7 +270,7 @@ const formattedEdges = computed(() => {
             class: !isHighlighted ? "opacity-10 grayscale" : "",
         };
     });
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -281,7 +302,7 @@ const formattedEdges = computed(() => {
                             variant="secondary"
                             size="icon"
                             class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
-                            @click.stop="openDetails({ data, label })"
+                            @click.stop="openDetails(data)"
                         >
                             <Maximize2 class="w-3.5 h-3.5" />
                         </Button>
@@ -296,7 +317,7 @@ const formattedEdges = computed(() => {
 
         <NodeDetailsDialog
             v-model:is-open="isDetailOpen"
-            :selected-node="selectedNode"
+            :selected-node-data="selectedNodeData"
         />
     </div>
 </template>

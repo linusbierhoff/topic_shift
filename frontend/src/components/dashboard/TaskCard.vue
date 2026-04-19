@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 import {
     Card,
-    CardContent,
+
     CardDescription,
     CardHeader,
     CardTitle,
@@ -17,6 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { FullTaskModel } from "../../models";
 import {
     Loader2,
     FileText,
@@ -27,7 +28,7 @@ import {
 } from "lucide-vue-next";
 
 const props = defineProps<{
-    task: any;
+    task: FullTaskModel;
     onDelete: (taskId: number) => Promise<void>;
 }>();
 

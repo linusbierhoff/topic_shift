@@ -3,13 +3,14 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BarChart3 } from "lucide-vue-next";
 import { getAllTasks, deleteTask } from "../api";
+import type { FullTaskModel } from "../models";
 import Footer from "../components/Footer.vue";
 import CreateTaskDialog from "../components/dashboard/CreateTaskDialog.vue";
 import TaskCard from "../components/dashboard/TaskCard.vue";
 import EmptyState from "../components/dashboard/EmptyState.vue";
 
-const tasks = ref<any[]>([]);
-const createTaskDialogRef = ref<any>(null);
+const tasks = ref<FullTaskModel[]>([]);
+const createTaskDialogRef = ref<InstanceType<typeof CreateTaskDialog> | null>(null);
 
 let pollInterval: number | undefined;
 

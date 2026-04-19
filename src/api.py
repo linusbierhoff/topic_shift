@@ -40,11 +40,11 @@ app.add_middleware(
 @app.post("/api/task/start", tags=["tasks"])
 async def upload_pdf(
     background_tasks: BackgroundTasks,
-    theme: str,
     file: UploadFile,
+    theme: str,
+    window_size: int = 5,
     remove_substrings: list[str] | None = None,
     clusters: int | None = None,
-    window_size: int | None = None,
 ) -> FullTaskModel:
     if remove_substrings is None:
         remove_substrings = []
@@ -57,11 +57,15 @@ async def upload_pdf(
     )
 
     def background_function(
-        temp_file_path: Path, theme, remove_substrings, clusters, window_size
+        temp_file_path: Path,
+        theme: str,
+        window_size: int,
+        remove_substrings: list[str],
+        clusters: int | None,
     ):
         try:
             clusters_res, relations = extract_pdf_contents(
-                str(temp_file_path), theme, remove_substrings, clusters, window_size
+                str(temp_file_path), theme, window_size, remove_substrings, clusters
             )
             DBConnection().upgrade_task(task_id, {"status": Status.COMPLETED})
             DBConnection().insert_clusters(clusters_res, task_id)
@@ -78,9 +82,9 @@ async def upload_pdf(
         background_function,
         temp_file_path,
         theme,
+        window_size,
         remove_substrings,
         clusters,
-        window_size,
     )
 
     return FullTaskModel(task_id=task_id, status=Status.IN_PROGRESS, theme=theme)

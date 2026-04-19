@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import random
+from types import CoroutineType
 
 from haystack import Document, component
 from haystack.components.generators.chat import OpenAIChatGenerator
@@ -22,7 +23,7 @@ class Response(BaseModel):
 
 @component
 class RelationshipClassificationComponent:
-    def __init__(self, theme: str, window_size: int = 5) -> None:
+    def __init__(self, theme: str, window_size: int) -> None:
         """Initialize the RelationshipClassificationComponent.
         Args:
             theme: The common theme shared by the documents in the s, which will be used to provide context for the relationship classification.
@@ -57,7 +58,7 @@ class RelationshipClassificationComponent:
             target_doc: Document,
             context_docs: list[Document],
             relations: list[Relation],
-        ) -> Relationship:
+        ):
             few_shots: list[tuple[str, str]] = [
                 # (
                 #     """
@@ -94,7 +95,7 @@ class RelationshipClassificationComponent:
                 messages.append(ChatMessage.from_assistant(example_output))
 
             document_section = "\n".join(
-                [doc.content for doc in [*context_docs, source_doc]]
+                [doc.content or "" for doc in [*context_docs, source_doc]]
             )
 
             relation = (
@@ -138,9 +139,9 @@ class RelationshipClassificationComponent:
                     )
                 )
 
-        relations = []
+        relations: list[Relation] = []
 
-        relation_comparisons = []
+        relation_comparisons: list[CoroutineType] = []
 
         for i in range(
             1, len(documents)
